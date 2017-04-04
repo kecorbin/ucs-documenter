@@ -75,7 +75,6 @@ def createWorkSheet(handle, workbook, sheetname, cls, columns):
 
     # Autofit column width
     for c in tracker.keys():
-        print("Setting Column {} to width {}".format(c, tracker[c]))
         sheet.set_column(c, c, tracker[c] * 1.2)
 
 def CreateWorkBook(handle,xls,tabs):
@@ -96,5 +95,10 @@ with open('config.yaml', 'r') as config:
     config = yaml.safe_load(config)
 hostname, username, password = config['host'], config['name'], config['passwd']
 handle = UcsHandle(hostname, username, password)
-handle.login()
-CreateWorkBook(handle, config['filename'], config['tabs'])
+print("Connecting to UCSM at {} as {} ......".format(hostname, username)),
+if handle.login():
+    print("Success")
+    print "Generating Workbook file {}".format(config['filename'])
+    CreateWorkBook(handle, config['filename'], config['tabs'])
+else:
+    print("FAIL")
