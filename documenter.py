@@ -2,11 +2,9 @@
 import xlsxwriter
 from ucsmsdk.ucshandle import UcsHandle
 import yaml
-"""
-Script which will gather useful infromation and put it into a spreadsheet
-"""
 
-tabs = []
+TABS = []
+
 
 class ColumnTracker(dict):
     """
@@ -19,26 +17,27 @@ class ColumnTracker(dict):
         else:
             dict.__setitem__(self, key, value)
 
-def new_worksheet(workbook,name):
-    '''
+
+def new_worksheet(workbook, name):
+    """
     Verify the sheet name is compatible with xlsx writer, tracks sheet names for case based duplicates
-    '''
-    global tabs
+    :param workbook: Workbook object
+    :param name: str name of tab
+    :return: worksheet object
+    """
+    global TABS
     name = name[0:31]
-    while True:
-        if name.lower() in tabs:
-            name += '-'
-        else:
-            tabs.append(name.lower())
-            sheet = workbook.add_worksheet(name)
-            break
+    if name.lower() in TABS:
+        name += '-'
+    TABS.append(name.lower())
+    sheet = workbook.add_worksheet(name)
     return sheet
 
 
-def createWorkSheet(handle, workbook, sheetname, cls, columns):
+def create_tab(ucshandle, workbook, sheetname, cls, columns):
     """
     creates a sheet in workbook
-    :param handle: UcsHandle object
+    :param ucshandle: UcsHandle object
     :param workbook: Workbook object
     :param sheetname: str name of tab/sheet
     :param cls: str class of objects in this sheet
@@ -52,22 +51,21 @@ def createWorkSheet(handle, workbook, sheetname, cls, columns):
     outline.set_border()
     tracker = ColumnTracker()
     sheet = new_worksheet(workbook, str(sheetname))
-    row, col = 0,0
+    row, col = 0, 0
     # write column headers
     for f in columns:
         sheet.write(row, col, f, header)
         tracker[col] = len(f)
         col += 1
-    row,col = 1,0
+    row, col = 1, 0
     # get data for sheet from class query
-    mos = handle.query_classid(cls)
-    width_dict = dict()
+    mos = ucshandle.query_classid(cls)
     for i in mos:
         # create a list of attributes (columns)
         attributes = [str(getattr(i, s)) for s in columns]
-        for i in attributes:
-            tracker[col] = len(i)
-            sheet.write(row, col, i, outline)
+        for val in attributes:
+            tracker[col] = len(val)
+            sheet.write(row, col, val, outline)
             col += 1
 
         row += 1
@@ -77,17 +75,18 @@ def createWorkSheet(handle, workbook, sheetname, cls, columns):
     for c in tracker.keys():
         sheet.set_column(c, c, tracker[c] * 1.2)
 
-def CreateWorkBook(handle,xls,tabs):
+
+def create_workbook(ucshandle, xls, tabs):
     """
     Creates Spreadsheet, calls createWorksheet for each tab, closes and saves spreadsheet
-    :param handle: UcsHandle instance
+    :param ucshandle: UcsHandle instance
     :param xls: str filename of xlsx spreadsheet
     :param tabs: dict configuration dictionary, usually imported from yaml
     :return: None
     """
     workbook = xlsxwriter.Workbook(xls)
     for k in tabs:
-        createWorkSheet(handle,workbook, k,tabs[k]['class'], tabs[k]['columns'])
+        create_tab(ucshandle, workbook, k, tabs[k]['class'], tabs[k]['columns'])
     workbook.close()
 
 
@@ -99,6 +98,6 @@ print("Connecting to UCSM at {} as {} ......".format(hostname, username)),
 if handle.login():
     print("Success")
     print "Generating Workbook file {}".format(config['filename'])
-    CreateWorkBook(handle, config['filename'], config['tabs'])
+    create_workbook(handle, config['filename'], config['tabs'])
 else:
     print("FAIL")
