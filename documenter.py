@@ -35,7 +35,16 @@ def new_worksheet(workbook,name):
     return sheet
 
 
-def createWorkSheet(md, workbook, sheetname, cls, columns):
+def createWorkSheet(handle, workbook, sheetname, cls, columns):
+    """
+    creates a sheet in workbook
+    :param handle: UcsHandle object
+    :param workbook: Workbook object
+    :param sheetname: str name of tab/sheet
+    :param cls: str class of objects in this sheet
+    :param columns: list of attributes/properties to which will be displayed as columns on the sheet
+    :return:
+    """
     # formatter for header cells
     header = workbook.add_format({"bold": True})
     # normal cell formatter
@@ -51,7 +60,7 @@ def createWorkSheet(md, workbook, sheetname, cls, columns):
         col += 1
     row,col = 1,0
     # get data for sheet from class query
-    mos = md.query_classid(cls)
+    mos = handle.query_classid(cls)
     width_dict = dict()
     for i in mos:
         # create a list of attributes (columns)
@@ -72,10 +81,10 @@ def createWorkSheet(md, workbook, sheetname, cls, columns):
 def CreateWorkBook(handle,xls,tabs):
     """
     Creates Spreadsheet, calls createWorksheet for each tab, closes and saves spreadsheet
-    :param handle:
-    :param xls:
-    :param tabs:
-    :return:
+    :param handle: UcsHandle instance
+    :param xls: str filename of xlsx spreadsheet
+    :param tabs: dict configuration dictionary, usually imported from yaml
+    :return: None
     """
     workbook = xlsxwriter.Workbook(xls)
     for k in tabs:
