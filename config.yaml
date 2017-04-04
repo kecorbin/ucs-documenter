@@ -1,0 +1,21 @@
+host: 192.168.51.137
+name: ucspe
+passwd: ucspe
+
+
+filename: test.xlsx
+tabs : {
+        'FabricInterconnect' : {
+            'class' : 'networkElement',
+            'columns' : ['dn','model','serial','vendor',],
+            },
+        'Blades' : {
+            'class' : 'computeBlade',
+            'columns' : ['dn','model','name','serial','vendor','num_of_cores','num_of_adaptors','oper_state'],
+            },
+        'Faults' : {
+            'class': 'faultInst',
+            'columns': ['dn','code','severity','descr']
+        }
+
+        }
